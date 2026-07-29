@@ -1,6 +1,7 @@
 export default async function handler(req, res) {
-  const { email } = req.query;
+  const { email, access_token } = req.query;
   if (!email) return res.status(400).json({ error: "email required" });
+  if (!access_token) return res.status(400).json({ error: "access_token required" });
 
   try {
     const resp = await fetch(
@@ -11,7 +12,7 @@ export default async function handler(req, res) {
           "User-Agent": "GarenaMSDK/4.0.19P9 (Android 9; en; US)",
           "Content-Type": "application/json"
         },
-        body: JSON.stringify({ email, app_id: 100067, channel: "email" })
+        body: JSON.stringify({ email, access_token, app_id: 100067, channel: "email" })
       }
     );
     const data = await resp.text();
