@@ -1,15 +1,9 @@
 {
   "version": 2,
-  "builds": [
-    {
-      "src": "api/send-otp.py",
-      "use": "@vercel/python"
-    }
-  ],
   "routes": [
     {
       "src": "/send-email",
-      "dest": "api/send-otp.py"
+      "dest": "/api/send-otp.py"
     }
   ]
 }
