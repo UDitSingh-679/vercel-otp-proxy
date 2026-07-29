@@ -1,37 +1,52 @@
-from http.server import BaseHTTPRequestHandler
-from urllib.parse import urlparse, parse_qs
-import requests, json
+from flask import Flask, request, jsonify
+import requests
 
-class handler(BaseHTTPRequestHandler):
-    def do_GET(self):
-        params = parse_qs(urlparse(self.path).query)
-        target_email = params.get('email', [None])[0]
+app = Flask(__name__)
 
-        if not target_email:
-            self.send_json(400, {"success": False, "error": "email required"})
-            return
+@app.route('/send-email', methods=['GET'])
+def send_email_otp():
+    target_email = request.args.get('email')
+    
+    if not target_email:
+        return jsonify({
+            "success": False,
+            "error": "Email parameter missing! Usage: /send-email?email=user@example.com"
+        }), 400
 
-        target_url = "https://ffmconnect.live.gop.garenanow.com/game/account_security/swap:send_otp"
-        headers = {
-            "User-Agent": "GarenaMSDK/4.0.19P9 (Android 9; en; US)",
-            "Content-Type": "application/json"
-        }
-        payload = {"email": target_email, "channel": "email"}
+    target_url = "https://ffmconnect.live.gop.garenanow.com/game/account_security/swap:send_otp"
+    
+    headers = {
+        "User-Agent": "GarenaMSDK/4.0.19P9 (Android 9; en; US)",
+        "Content-Type": "application/json",
+        "Connection": "keep-alive"
+    }
+    
+    payload = {
+        "email": target_email,
+        "channel": "email"
+    }
 
+    try:
+        response = requests.post(target_url, json=payload, headers=headers, timeout=10)
+        
         try:
-            resp = requests.post(target_url, json=payload, headers=headers, timeout=10)
-            data = resp.json() if resp.text else resp.text
-            self.send_json(resp.status_code, {
-                "success": resp.status_code == 200,
-                "http_code": resp.status_code,
-                "target_email": target_email,
-                "response": data
-            })
-        except Exception as e:
-            self.send_json(500, {"success": False, "error": str(e)})
+            resp_data = response.json()
+        except Exception:
+            resp_data = response.text
 
-    def send_json(self, code, data):
-        self.send_response(code)
-        self.send_header('Content-type', 'application/json')
-        self.end_headers()
-        self.wfile.write(json.dumps(data).encode())
+        return jsonify({
+            "success": response.status_code == 200,
+            "http_code": response.status_code,
+            "target_email": target_email,
+            "response": resp_data
+        }), response.status_code
+
+    except requests.exceptions.RequestException as e:
+        return jsonify({
+            "success": False,
+            "error": "Failed to connect to target server",
+            "details": str(e)
+        }), 500
+
+if __name__ == '__main__':
+    app.run(debug=True)
