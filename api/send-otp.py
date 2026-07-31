@@ -1,5 +1,5 @@
 from http.server import BaseHTTPRequestHandler
-from urllib.parse import parse_qs, urlparse
+from urllib.parse import parse_qs, urlparse, urlencode
 import json
 import urllib.request
 import urllib.error
@@ -27,15 +27,15 @@ class handler(BaseHTTPRequestHandler):
         # 2. Target Endpoint Setup
         target_url = "https://ffmconnect.live.gop.garenanow.com/game/account_security/swap:send_otp"
         
-        payload = json.dumps({
+        payload = urlencode({
             "email": target_email,
-            "channel": "email"
+            "channel": "email",
+            "app_id": 100067
         }).encode('utf-8')
 
         headers = {
             "User-Agent": "GarenaMSDK/4.0.19P9 (Android 9; en; US)",
-            "Content-Type": "application/json",
-            "Connection": "keep-alive"
+            "Content-Type": "application/x-www-form-urlencoded"
         }
 
         # 3. Request Forwarding using urllib
